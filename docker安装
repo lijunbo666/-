@@ -1,0 +1,46 @@
+1，Linux下安装依赖包(以下用root账号登录)
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2  
+
+2，设置阿里云镜像源
+sudo yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo 
+如果报错：
+   1）
+--> Processing Conflict: 1:docker-ce-cli-18.09.6-3.el7.x86_64 conflicts docker
+--> Processing Conflict: 1:docker-ce-cli-18.09.6-3.el7.x86_64 conflicts docker-io
+--> Processing Conflict: 3:docker-ce-18.09.6-3.el7.x86_64 conflicts docker
+--> Processing Conflict: 3:docker-ce-18.09.6-3.el7.x86_64 conflicts docker-io
+--> Finished Dependency Resolution
+Error: docker-ce conflicts with 2:docker-1.13.1-96.gitb2f74b2.el7.centos.x86_64
+Error: docker-ce-cli conflicts with 2:docker-1.13.1-96.gitb2f74b2.el7.centos.x86_64
+ You could try using --skip-broken to work around the problem
+ You could try running: rpm -Va --nofiles --nodigest
+  2）解决以上错误方法：
+# 1、查看安装过的docker：
+yum list installed | grep docker
+docker.x86_64                           2:1.13.1-74.git6e3bb8e.el7.centos
+docker-client.x86_64                    2:1.13.1-74.git6e3bb8e.el7.centos
+docker-common.x86_64                    2:1.13.1-74.git6e3bb8e.el7.centos
+# 2、卸载docker：
+sudo yum remove -y docker-ce.x86_64 docker-client.x86_64 docker-common.x86_64
+# 3、删除容器镜像：
+sudo rm -rf /var/lib/docker
+# 4、 重新安装docker
+sudo yum install docker-ce
+3，启动docker
+# 开机自启
+sudo systemctl enable docker 
+# 启动docker服务  
+sudo systemctl start docker
+镜像加速配置
+# 加速器地址 ：
+# 阿里云控制台搜索容器镜像服务
+# 进入容器镜像服务， 左侧最下方容器镜像服务中复制加速器地址
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["你的加速器地址"]
+}
+EOF
+# 5，重启docker
+sudo systemctl daemon-reload
+sudo systemctl restart docker
